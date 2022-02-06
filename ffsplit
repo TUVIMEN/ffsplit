@@ -1,0 +1,48 @@
+#!/bin/sh
+
+quit() {
+    t="$1"
+    shift
+    $@
+    exit "$t"
+}
+
+if [ $# -lt 5 ]
+then
+    name="$(basename "$0")"
+    printf "Usage: %s [FILE] [ARTIST] [ALBUM] [DATE] [EXT] [FFMPEG OPTIONS]\nSplit FILE according to file opened in \$EDITOR, where the first field is track's ending time and second is the track's name.\n" "$name"
+    exit 1;
+fi
+[ -e "$1" ] || quit 1 "%s: no such file or directory" $1
+[ -f "$1" ] || quit 1 "%s: isn't a file" $1
+[ $(stat -c%s "$1" ) -eq 0 ] && quit 1 "%s: is an empty file" $1
+
+IFS=$'\n'
+tmp=$(mktemp)
+trap 'rm "$tmp"' EXIT
+
+file="$1"
+artist="$2"
+album="$3"
+date="$4"
+ext="$5"
+shift 5
+
+$EDITOR "$tmp"
+[ $(stat -c%s "$tmp" ) -eq 0 ] && rm "$tmp" && quit 1 "aborting"
+
+begin="00:00:00"
+g=1;
+while read -r i
+do
+    end="$(cut -d ' ' -f1 <<< "$i")"
+    title="$(cut -c 10- <<< "$i")"
+    track="$(printf "%02d" $g)"
+    name="$track-$(sed -E 's/ /-/g; s/[A-Z]/\L&/g; s/-{2,}//g' <<< "$title").$ext"
+
+    ffmpeg -nostdin -loglevel 0 -i "$file" -ss "$begin" -to "$end" -map_metadata -1 -metadata "date=$date" -metadata "track=$track" -metadata "artist=$artist" -metadata "album=$album" -metadata "title=$title" $@ "$name"
+    echo "$name"
+
+    begin="$end"
+    let g++;
+done < "$tmp"
