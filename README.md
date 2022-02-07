@@ -26,5 +26,5 @@ created files:
 
 ## Instalation
 	git clone 'https://github.com/TUVIMEN/ffsplit'
-	cd libgen
+	cd ffsplit
 	sudo install -m 755 ffsplit /usr/bin
