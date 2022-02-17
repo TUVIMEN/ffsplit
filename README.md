@@ -25,6 +25,4 @@ created files:
 	05-fifth-track.ogg
 
 ## Instalation
-	git clone 'https://github.com/TUVIMEN/ffsplit'
-	cd ffsplit
 	sudo install -m 755 ffsplit /usr/bin
