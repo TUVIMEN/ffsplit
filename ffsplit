@@ -1,4 +1,6 @@
 #!/bin/sh
+# by TUVIMEN <suchora.dominik7@gmail.com>
+# License: GNU GPLv3
 
 quit() {
     t="$1"
