@@ -24,5 +24,5 @@ created files:
 	04-fourth-track.ogg
 	05-fifth-track.ogg
 
-## Instalation
-	sudo install -m 755 ffsplit /usr/bin
+## Installation
+	install -m 755 ffsplit /usr/bin
