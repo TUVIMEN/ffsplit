@@ -1,5 +1,5 @@
 #!/bin/sh
-# by TUVIMEN <suchora.dominik7@gmail.com>
+# by Dominik Stanisław Suchora <suchora.dominik7@gmail.com>
 # License: GNU GPLv3
 
 quit() {
@@ -41,7 +41,7 @@ do
     track="$(printf "%02d" $g)"
     name="$track-$(echo "$title" | sed -E 's/ /-/g; s/[A-Z]/\L&/g; s/-{2,}//g').$ext"
 
-    ffmpeg -nostdin -loglevel 0 -i "$file" -ss "$begin" -to "$end" -map_metadata -1 -metadata "date=$date" -metadata "track=$track" -metadata "artist=$artist" -metadata "album=$album" -metadata "title=$title" $@ "$name"
+    ffmpeg -nostdin -loglevel 0 -i "$file" -ss "$begin" -to "$end" -map_metadata -1 -metadata "date=$date" -metadata "track=$track" -metadata "artist=$artist" -metadata "album=$album" -metadata "title=$title" "$@" "$name"
     echo "$name"
 
     begin="$end"
