@@ -5,14 +5,14 @@
 quit() {
     t="$1"
     shift
-    $@
+    echo $@
     exit "$t"
 }
 
 if [ $# -lt 5 ]
 then
     name="$(basename "$0")"
-    printf "Usage: %s [FILE] [ARTIST] [ALBUM] [DATE] [EXT] [FFMPEG OPTIONS]\nSplit FILE according to file opened in \$EDITOR, where the first field is track's ending time and second is the track's name.\n" "$name"
+    printf "Usage: %s [FILE] [ARTIST] [ALBUM] [DATE] [EXT] [FFMPEG OPTIONS]\nSplit audio FILE according to file opened in \$EDITOR, where the first field is track's starting time and second is the track's name.\n" "$name"
     exit 1;
 fi
 [ -e "$1" ] || quit 1 "%s: no such file or directory" "$1"
@@ -32,18 +32,33 @@ shift 5
 $EDITOR "$tmp"
 [ "$(stat -c%s "$tmp")" -eq 0 ] && rm "$tmp" && quit 1 "aborting"
 
-begin="00:00:00"
+begin=""
+end=""
+last=""
 g=1;
-while read -r i
+while :
 do
-    end="$(echo "$i" | cut -d ' ' -f1)"
-    title="$(echo "$i" | cut -c 10-)"
+    if [ -z "$line" ]
+    then
+        read -r line || break
+    fi
+    begin="$(echo "$line" | cut -d ' ' -f1)"
+    title="$(echo "$line" | cut -d ' ' -f2-)"
     track="$(printf "%02d" $g)"
     name="$track-$(echo "$title" | sed -E 's/ /-/g; s/[A-Z]/\L&/g; s/-{2,}//g').$ext"
+
+    if read -r line
+    then
+        end="$(echo "$line" | cut -d ' ' -f1)"
+    else
+        end=9999999
+        last=1
+    fi
 
     ffmpeg -nostdin -loglevel 0 -i "$file" -ss "$begin" -to "$end" -map_metadata -1 -metadata "date=$date" -metadata "track=$track" -metadata "artist=$artist" -metadata "album=$album" -metadata "title=$title" "$@" "$name"
     echo "$name"
 
-    begin="$end"
+    [ -n "$last" ] && break
+
     g="$(expr $g + 1)"
 done < "$tmp"
