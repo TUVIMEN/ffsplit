@@ -20,7 +20,7 @@ fi
 [ "$(stat -c%s "$1")" -eq 0 ] && quit 1 "%s: is an empty file" "$1"
 
 tmp="$(mktemp)"
-trap 'rm "$tmp"' EXIT
+trap 'rm "$tmp"' HUP INT QUIT TERM PWR EXIT RETURN
 
 file="$1"
 artist="$2"
